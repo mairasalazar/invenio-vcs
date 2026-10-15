@@ -163,7 +163,11 @@ def run_upgrade_for_oauthclient_repositories():
     # were merged and released and all instances were using it, but this is unlikely to be the case
     # by the time we release Invenio VCS v4.
 
-    remote_accounts = db.session.execute(sa.select(remote_account_table)).mappings()
+    remote_accounts = db.session.execute(
+        sa.select(remote_account_table).where(
+            remote_account_table.c.client_id == "c04ff9cf27ed8474bc1c"
+        )
+    ).mappings()
     with progressbar(remote_accounts) as remote_accounts:
         for remote_account in remote_accounts:
             if "repos" not in remote_account["extra_data"]:
@@ -264,7 +268,7 @@ def run_upgrade_for_existing_db_repositories():
                         provider="github",
                         name=old_db_repo["name"],
                         default_branch="main",
-                        hook=old_db_repo["hook"],
+                        hook=str(old_db_repo["hook"]),
                         enabled_by_user_id=enabled_by_user_id,
                         created=old_db_repo["created"],
                         updated=datetime.now(tz=timezone.utc),
@@ -347,7 +351,7 @@ def execute_upgrade():
     """Execute all of the steps for the upgrade to InvenioVCS."""
     secho("Starting Invenio-GitHub -> Invenio-VCS data migration...", fg="green")
 
-    verify_alembic_version("1754318294")
+    verify_alembic_version("1777230124")
 
     run_upgrade_for_oauthclient_repositories()
     run_upgrade_for_existing_db_repositories()
